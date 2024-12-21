@@ -21,7 +21,6 @@ export class UserService {
       ...data,
       id: this.users.length + 1,
     };
-    console.log(finalData);
     this.users.push(finalData);
     return finalData;
   }
@@ -31,6 +30,6 @@ export class UserService {
   }
   getUserById(id: number): any {
     console.log(id);
-    return this.users.filter((user) => user.id === id);
+    return this.users.find((user) => user.id === id) || {};
   }
 }
