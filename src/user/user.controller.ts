@@ -7,13 +7,15 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
+  constructor(private userService: UserService) {}
   //    All Get Request Handleer
   @Get()
   getUser(): string {
-    return 'User data';
+    return this.userService.getUsers();
   }
   //   get UserByID
   @Get('intern')
@@ -30,9 +32,15 @@ export class UserController {
 
   @Post()
   createUser(
-    @Body() userData: { name: string; email: string; position: string },
+    @Body()
+    userData: {
+      id: number;
+      name: string;
+      email: string;
+      position: string;
+    },
   ) {
-    return userData;
+    return this.userService.createUser(userData);
   }
 
   //    For Patch Request
