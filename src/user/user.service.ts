@@ -25,7 +25,12 @@ export class UserService {
     this.users.push(finalData);
     return finalData;
   }
+
   getUsers(): any {
     return this.users;
+  }
+  getUserById(id: number): any {
+    console.log(id);
+    return this.users.filter((user) => user.id === id);
   }
 }

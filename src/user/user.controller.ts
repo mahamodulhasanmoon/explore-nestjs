@@ -24,8 +24,8 @@ export class UserController {
   }
 
   @Get(':id')
-  getUserById(@Param('id') id: string): string {
-    return 'User data By ID ' + id;
+  getUserById(@Param('id') id: number): string {
+    return this.userService.getUserById(id);
   }
 
   //    All Post Request Handler Methods
