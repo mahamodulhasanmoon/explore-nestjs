@@ -45,11 +45,14 @@ export class UserController {
   //    For Patch Request
 
   @Patch(':id')
-  updateUser(@Param('id') id: string, @Body() userData: UpdateUserDto) {
+  updateUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() userData: UpdateUserDto,
+  ) {
     return { id, ...userData };
   }
   @Delete(':id')
-  deleteUserById(@Param('id') id: string): string {
+  deleteUserById(@Param('id', ParseIntPipe) id: number) {
     return 'User delete' + id;
   }
 }
