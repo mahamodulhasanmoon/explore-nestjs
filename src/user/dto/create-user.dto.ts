@@ -13,4 +13,15 @@ export class CreateUserDto {
   })
   position: 'CEO' | 'Intern' | 'Engineer';
   id: number;
+
+  getDetails() {
+    return (
+      'his Name Is :' +
+      this.name +
+      ' and Position is  ' +
+      this.position +
+      'with Id ' +
+      this.id
+    );
+  }
 }

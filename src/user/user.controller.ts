@@ -32,6 +32,13 @@ export class UserController {
     return this.userService.getUserById(id);
   }
 
+  @Get(':id/get-details')
+  getDetails(@Param('id', ParseIntPipe) id: number): string {
+    const user = this.userService.getUserById(id);
+    // return user;
+    return user.userDetails;
+  }
+
   //    All Post Request Handler Methods
 
   @Post()

@@ -25,10 +25,15 @@ export class UserService {
     return this.users;
   }
   getUserById(id: number): any {
-    console.log(id);
     const user = this.users.find((user) => user.id === id);
     if (!user) throw new NotFoundException();
+    const userDto = new CreateUserDto();
+    userDto.name = user.name;
+    userDto.email = user.email;
+    userDto.position = user.position as 'CEO' | 'Intern' | 'Engineer';
+    userDto.id = user.id;
 
-    return user;
+    return userDto;
+    // return user;
   }
 }
