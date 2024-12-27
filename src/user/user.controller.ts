@@ -7,8 +7,11 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -29,17 +32,19 @@ export class UserController {
     return this.userService.getUserById(id);
   }
 
+  @Get(':id/get-details')
+  getDetails(@Param('id', ParseIntPipe) id: number): string {
+    const user = this.userService.getUserById(id);
+    // return user;
+    return user.userDetails;
+  }
+
   //    All Post Request Handler Methods
 
   @Post()
   createUser(
-    @Body()
-    userData: {
-      id: number;
-      name: string;
-      email: string;
-      position: string;
-    },
+    @Body(ValidationPipe)
+    userData: CreateUserDto,
   ) {
     return this.userService.createUser(userData);
   }
@@ -48,13 +53,13 @@ export class UserController {
 
   @Patch(':id')
   updateUser(
-    @Param('id') id: string,
-    @Body() userData: { name: string; email: string; position: string },
+    @Param('id', ParseIntPipe) id: number,
+    @Body() userData: UpdateUserDto,
   ) {
     return { id, ...userData };
   }
   @Delete(':id')
-  deleteUserById(@Param('id') id: string): string {
+  deleteUserById(@Param('id', ParseIntPipe) id: number) {
     return 'User delete' + id;
   }
 }
