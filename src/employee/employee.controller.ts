@@ -7,10 +7,12 @@ import {
   Param,
   Delete,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { EmployeeService } from './employee.service';
 import { Prisma } from '@prisma/client';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { EmployeeInterceptor } from 'src/interceptor/employee.interceptor';
 
 @SkipThrottle()
 @Controller('employee')
@@ -23,6 +25,7 @@ export class EmployeeController {
   }
   @SkipThrottle({ default: false })
   @Get()
+  @UseInterceptors(EmployeeInterceptor)
   findAll(@Query('position') position?: 'CEO' | 'Engineer' | 'Intern') {
     return this.employeeService.findAll(position);
   }
