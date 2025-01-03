@@ -12,11 +12,11 @@ export class EmployeeInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       map((data) => {
-        // যদি ডেটা একটি অ্যারে হয়, তাহলে প্রতিটি এলিমেন্ট ট্রান্সফর্ম করুন
+        // if is it array
         if (Array.isArray(data)) {
           return data.map((employee) => this.transformEmployee(employee));
         }
-        // যদি ডেটা একটি অবজেক্ট হয়, তাহলে সরাসরি ট্রান্সফর্ম করুন
+        // if it is not array
         return this.transformEmployee(data);
       }),
     );
