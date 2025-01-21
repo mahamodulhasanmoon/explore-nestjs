@@ -1,36 +1,608 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
 }
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:BrainicSoft@localhost:3306/explore-mysql"
+  url      = env("DATABASE_URL")
 }
 
+model Admin {
+  id                   Int                   @id @default(autoincrement())
+  email                String                @unique
+  password             String
+  role                 AdminRole
+  active               Boolean               @default(false)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime?             @updatedAt
+  ReservationActivites ReservationActivity[]
+  Journal              Journal[]
+  socketId             String?               @unique
 
-model User {
-  id         Int      @id @default(autoincrement())
-  email      String   @unique
-  position   Position
-  name       String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  @@map("admins")
 }
 
-enum Position {
-  CEO
-  DEVELOPER
-  DESIGNER
-  PRODUCT_MANAGER
-  MARKETING
-  SALES
-  HR
-  Intern
-  Engineer
+model CurrencyRate {
+  id         Int                   @id @default(autoincrement())
+  from       Currency
+  to         Currency
+  gds        String?
+  carrier    String?
+  flightType FlightType?
+  rate       Decimal
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime?             @updatedAt
+  history    CurrencyRateHistory[]
+
+  @@unique([from, to, gds, carrier, flightType], name: "gds_airline_way_rate")
+  @@map("currency_rates")
+}
+
+model CurrencyRateHistory {
+  id             Int          @id @default(autoincrement())
+  currencyRateId Int
+  rate           Decimal
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime?    @updatedAt
+  currencyRate   CurrencyRate @relation(fields: [currencyRateId], references: [id])
+
+  @@map("currency_rates_history")
+}
+
+model Company {
+  id              Int                   @id @default(autoincrement())
+  country         Countries
+  name            String
+  address         String
+  city            String?
+  email           String?               @unique
+  phone           String
+  logo            String?
+  balance         Decimal               @default(0) @map("balance")
+  emergencyLimit  Decimal               @default(0)
+  emergencyExpire DateTime              @default(now())
+  staff           Staff[]
+  allowPreBooking Boolean               @default(false)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime?             @updatedAt
+  BankAccount     BankAccount[]
+  balanceStatus   BalanceStatusDataType @default(ACTIVE)
+  Journal         Journal[]
+  AgencyMarkup    AgencyMarkup[]
+  status          StatusDataType        @default(WAITING)
+  Notification    Notification[]
+
+  @@unique([country, phone], name: "country_phone")
+  @@map("companies")
+}
+
+model Staff {
+  id                   Int                    @id @default(autoincrement())
+  companyId            Int
+  name                 String
+  gender               Gender?
+  email                String                 @unique
+  phone                String?                @unique
+  password             String?
+  role                 Role
+  designation          String?
+  address              String?
+  verified             Boolean                @default(false)
+  token                String?
+  active               Boolean                @default(false)
+  company              Company                @relation(fields: [companyId], references: [id])
+  socketId             String?                @unique
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime?              @updatedAt
+  MobileBankingDeposit MobileBankingDeposit[]
+  BankDeposit          BankDeposit[]
+  BankTransfer         BankTransfer[]
+  SearchHistory        SearchHistory[]
+  Reservations         Reservations[]
+  Passenger            Passenger[]
+  SavedPassenger       SavedPassenger[]
+  CashDeposit          CashDeposit[]
+  Transactions         Transactions[]
+  ReservationActivites ReservationActivity[]
+  Notification         Notification[]
+  AdminNotification    AdminNotification[]
+
+  @@map("staffs")
+}
+
+enum AdminRole {
+  admin
+  manager
+  accountant
+}
+
+enum Role {
+  admin
+  general
+}
+
+enum Gender {
+  Male
+  Female
+  Other
+}
+
+model SearchHistory {
+  id            Int       @id @default(autoincrement())
+  staffId       Int
+  origin        String
+  destination   String
+  way           Int
+  departureDate DateTime
+  returnDate    DateTime?
+  count         Int       @default(1)
+  todayCount    Int       @default(1)
+  staff         Staff     @relation(fields: [staffId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime? @updatedAt
+
+  @@unique([staffId, way, origin, destination], name: "staff_route")
+  @@map("search_history")
+}
+
+model Reservations {
+  id               Int                   @id @default(autoincrement())
+  staffId          Int
+  carrier          String
+  GDS              GDSName
+  flightType       FlightType
+  flightTime       DateTime
+  utcOffset        Float?
+  PNR              String
+  S2PNR            String?
+  airlinesPNR      String
+  status           TicketStatus          @default(HOLD)
+  name             String
+  flightPaxId      String?
+  email            String
+  phone            String
+  timeLimit        DateTime?
+  bookingTime      DateTime
+  flightInfo       Json?
+  pricingInfo      Json?
+  baggage          Json?
+  meal             Json?
+  seat             Json?
+  bookingInfo      Json?
+  basePrice        Decimal
+  tax              Decimal
+  totalPrice       Decimal
+  payment          Boolean               @default(false)
+  baggagePrice     Decimal               @default(0)
+  mealPrice        Decimal               @default(0)
+  seatPrice        Decimal               @default(0)
+  discount         Json?
+  discountedAmount Decimal               @default(0)
+  rate             Decimal
+  price            Decimal
+  vendor           String?
+  vendorAmount     Decimal?
+  staff            Staff                 @relation(fields: [staffId], references: [id])
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime?             @updatedAt
+  passengers       Passenger[]
+  activities       ReservationActivity[]
+  journals         Journal[]
+
+  @@unique(fields: [id, status], name: "id_status")
+  @@map("reservations")
+}
+
+model ReservationActivity {
+  id            Int          @id @default(autoincrement())
+  reservationId Int
+  name          TicketStatus
+  staffId       Int?
+  adminId       Int?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime?    @updatedAt
+  reservation   Reservations @relation(fields: [reservationId], references: [id])
+  staff         Staff?       @relation(fields: [staffId], references: [id])
+  admin         Admin?       @relation(fields: [adminId], references: [id])
+
+  @@map("reservation_activities")
+}
+
+model Passenger {
+  id                 Int           @id @default(autoincrement())
+  staffId            Int
+  reservationId      Int
+  type               PassengerType
+  prefix             String
+  firstName          String
+  lastName           String
+  gender             Gender
+  dob                String
+  age                Int?
+  passportNumber     String
+  passportExpireDate String
+  nationality        String
+  ticketNo           String?
+  staff              Staff         @relation(fields: [staffId], references: [id])
+  reservation        Reservations  @relation(fields: [reservationId], references: [id])
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime?     @updatedAt
+
+  @@map("passengers")
+}
+
+model SavedPassenger {
+  id                 Int           @id @default(autoincrement())
+  staffId            Int
+  type               PassengerType
+  prefix             String
+  firstName          String
+  lastName           String
+  gender             Gender
+  dob                String
+  passportNumber     String        @unique
+  passportExpireDate String
+  nationality        String
+  staff              Staff         @relation(fields: [staffId], references: [id])
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime?     @updatedAt
+
+  @@map("saved_passengers")
+}
+
+model AdminBank {
+  id                Int            @id @default(autoincrement())
+  bankName          String
+  accountNumber     String
+  accountHolderName String
+  branchName        String
+  IBAN              String?
+  routingNumber     String?
+  swiftCode         String?
+  status            Boolean
+  BankTransfer      BankTransfer[]
+  BankDeposit       BankDeposit[]
+
+  @@map("admin_banks")
+}
+
+model CashCounter {
+  id          Int           @id @default(autoincrement())
+  name        String
+  Address     String
+  CashDeposit CashDeposit[]
+
+  @@map("cash_counters")
+}
+
+model BankAccount {
+  id                Int            @id @default(autoincrement())
+  companyId         Int
+  accountHolderName String
+  bankName          String
+  accountNumber     String
+  branchName        String
+  address           String
+  routingNumber     String?
+  swiftCode         String?
+  company           Company        @relation(fields: [companyId], references: [id])
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime?      @updatedAt
+  BankTransfer      BankTransfer[]
+
+  @@map("bank_accounts")
+}
+
+model MobileBankingDeposit {
+  id         Int               @id @default(autoincrement())
+  date       DateTime
+  staffId    Int
+  name       MobileBankingName
+  trxID      String            @unique
+  fee        Decimal
+  amount     Decimal
+  attachment String
+  status     DepositStatus     @default(PENDING)
+  staff      Staff             @relation(fields: [staffId], references: [id])
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime?         @updatedAt
+
+  @@map("mobile_banking_deposits")
+}
+
+model CashDeposit {
+  id         Int           @id @default(autoincrement())
+  date       DateTime
+  staffId    Int
+  counterId  Int
+  reference  String        @unique
+  amount     Decimal
+  attachment String
+  status     DepositStatus @default(PENDING)
+  remark     String?
+  staff      Staff         @relation(fields: [staffId], references: [id])
+  counter    CashCounter   @relation(fields: [counterId], references: [id])
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime?     @updatedAt
+  Journal    Journal[]
+
+  @@unique([id, status])
+  @@map("cash_deposits")
+}
+
+model BankDeposit {
+  id          Int           @id @default(autoincrement())
+  date        DateTime
+  staffId     Int
+  adminBankId Int
+  reference   String        @unique
+  amount      Decimal
+  attachment  String
+  status      DepositStatus @default(PENDING)
+  remark      String?
+  staff       Staff         @relation(fields: [staffId], references: [id])
+  adminBank   AdminBank     @relation(fields: [adminBankId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime?     @updatedAt
+  Journal     Journal[]
+
+  @@unique([id, status])
+  @@map("bank_deposits")
+}
+
+model BankTransfer {
+  id          Int           @id @default(autoincrement())
+  date        DateTime
+  staffId     Int
+  adminBankId Int
+  bankId      Int
+  reference   String        @unique
+  amount      Decimal
+  attachment  String
+  status      DepositStatus @default(PENDING)
+  remark      String?
+  staff       Staff         @relation(fields: [staffId], references: [id])
+  bank        BankAccount   @relation(fields: [bankId], references: [id])
+  adminBank   AdminBank     @relation(fields: [adminBankId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime?     @updatedAt
+  Journal     Journal[]
+
+  @@unique([id, status])
+  @@map("bank_transfers")
+}
+
+view Transactions {
+  id         Int
+  staffId    Int
+  type       String
+  date       DateTime
+  status     DepositStatus
+  amount     Decimal
+  reference  String
+  remark     String?
+  adminBank  Json?
+  bank       Json?
+  counter    Json?
+  attachment String
+  createdAt  DateTime
+  updatedAt  DateTime
+  staff      Staff         @relation(fields: [staffId], references: [id])
+
+  @@unique([type, id])
+  @@map("transactions")
+}
+
+model Journal {
+  id             Int             @id @default(autoincrement())
+  adminId        Int?
+  agentId        Int
+  type           JournalDataType
+  amount         Decimal
+  reservationId  Int?
+  cashDepositId  Int?
+  bankDepositId  Int?
+  bankTransferId Int?
+  admin          Admin?          @relation(fields: [adminId], references: [id])
+  agent          Company?        @relation(fields: [agentId], references: [id])
+  reservation    Reservations?   @relation(fields: [reservationId], references: [id])
+  cashDeposit    CashDeposit?    @relation(fields: [cashDepositId], references: [id])
+  bankDeposit    BankDeposit?    @relation(fields: [bankDepositId], references: [id])
+  bankTransfer   BankTransfer?   @relation(fields: [bankTransferId], references: [id])
+  PNR            String?
+  description    String?
+  attachment     String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime?       @updatedAt
+
+  @@map("journals")
+}
+
+model Airline {
+  id           Int            @id @default(autoincrement())
+  name         String         @unique
+  code         String         @unique
+  GdsMarkup    GdsMarkup[]
+  AgencyMarkup AgencyMarkup[]
+
+  @@map("airlines")
+}
+
+model GDS {
+  id        Int         @id @default(autoincrement())
+  name      String      @unique
+  active    Boolean     @default(true)
+  GdsMarkup GdsMarkup[]
+
+  @@map("gds")
+}
+
+model GdsMarkup {
+  id         Int         @id @default(autoincrement())
+  gdsId      Int
+  airlineId  Int?
+  cls        String?
+  type       MarkupType
+  flightType FlightType?
+  from       String?
+  to         String?
+  value      Decimal
+  gds        GDS         @relation(fields: [gdsId], references: [id])
+  airline    Airline?    @relation(fields: [airlineId], references: [id])
+
+  @@unique([gdsId, airlineId, cls, flightType, from, to])
+  @@map("gdsmarkups")
+}
+
+model AgencyMarkup {
+  id        Int        @id @default(autoincrement())
+  agencyId  Int
+  gds       String?
+  airlineId Int?
+  cls       String?
+  type      MarkupType
+  value     Decimal
+  agency    Company    @relation(fields: [agencyId], references: [id])
+  airline   Airline?   @relation(fields: [airlineId], references: [id])
+  gDSId     Int?
+
+  @@unique([agencyId, gds, airlineId, cls])
+  @@map("agencymarkups")
+}
+
+model AdminNotification {
+  id        Int              @id @default(autoincrement())
+  agencyId  Int?
+  staffId   Int
+  type      NotificationType
+  seen      Boolean          @default(false)
+  info      Json
+  staff     Staff            @relation(fields: [staffId], references: [id])
+  createdAt DateTime         @default(now())
+  updatedAt DateTime?        @updatedAt
+
+  @@map("admin_notifications")
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  agencyId  Int?
+  staffId   Int
+  type      NotificationType
+  seen      Boolean          @default(false)
+  info      Json
+  agency    Company?         @relation(fields: [agencyId], references: [id])
+  staff     Staff            @relation(fields: [staffId], references: [id])
+  createdAt DateTime         @default(now())
+  updatedAt DateTime?        @updatedAt
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  NOTICE
+  DEPOSIT
+  TICKET
+  OTHER
+}
+
+enum Countries {
+  AE
+  BD
+  IN
+  SA
+  OM
+  QA
+  MY
+  MV
+}
+
+enum Currency {
+  BDT
+  AED
+  INR
+  SAR
+  QAR
+}
+
+enum FlightType {
+  ONE_WAY
+  ROUND_TRIP
+  MULTI_CITY
+}
+
+enum MarkupType {
+  AMOUNT
+  PERCENT
+}
+
+enum GDSName {
+  Galileo
+  Sabre
+  Riya
+  S1
+  TP_AE
+  S2
+  S3
+  S12
+  BS_BD
+  BS_AE
+  TJ
+  BDF
+}
+
+enum MobileBankingName {
+  bKash
+  Nagad
+}
+
+enum PassengerType {
+  ADT
+  CNN
+  INF
+}
+
+enum DepositStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TicketStatus {
+  HOLD
+  ISSUE_REQUESTED
+  CANCEL_REQUESTED
+  TIME_REQUESTED
+  EXPIRED
+  TICKETED
+  CANCELLED
+  REFUNDED
+  VOIDED
+  APPROVED
+  DECLINED
+}
+
+enum JournalDataType {
+  CASH_DEPOSIT
+  BANK_DEPOSIT
+  BANK_TRANSFER
+  TICKET
+  MANUAL_TICKET
+  MANUAL_CREDIT
+  DATE_CHANGED
+  REFUNDED
+  ADM
+  ACM
+}
+
+enum BalanceStatusDataType {
+  FREEZE
+  ACTIVE
+}
+
+enum StatusDataType {
+  WAITING
+  ENABLE
+  DISABLE
 }

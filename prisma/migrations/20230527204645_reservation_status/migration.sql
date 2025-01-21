@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `reservations` MODIFY `status` ENUM('HOLD', 'PROCESSING', 'REFUNDED', 'VOID', 'TICKETED') NOT NULL DEFAULT 'HOLD';

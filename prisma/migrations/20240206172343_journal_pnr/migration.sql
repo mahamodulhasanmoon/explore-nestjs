@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `journals` ADD COLUMN `PNR` VARCHAR(191) NULL;

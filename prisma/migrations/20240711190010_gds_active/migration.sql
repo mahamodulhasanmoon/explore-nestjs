@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `gds` ADD COLUMN `active` BOOLEAN NOT NULL DEFAULT true;
