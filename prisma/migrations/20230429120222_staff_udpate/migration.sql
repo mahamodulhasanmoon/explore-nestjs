@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE `staffs` ADD COLUMN `active` BOOLEAN NOT NULL DEFAULT false,
-    ADD COLUMN `token` BOOLEAN NULL,
-    ADD COLUMN `verified` BOOLEAN NOT NULL DEFAULT false;

@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE `companies` ADD COLUMN `emergencyExpire` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    ADD COLUMN `emergencyLimit` DECIMAL(65, 30) NOT NULL DEFAULT 0;

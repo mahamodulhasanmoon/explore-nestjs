@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `reservations` ADD COLUMN `S2PNR` VARCHAR(191) NULL;

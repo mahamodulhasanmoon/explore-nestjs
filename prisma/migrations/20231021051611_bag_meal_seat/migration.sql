@@ -1,6 +1,0 @@
--- AlterTable
-ALTER TABLE `reservations` ADD COLUMN `baggage` JSON NULL,
-    ADD COLUMN `meal` JSON NULL,
-    ADD COLUMN `mealPrice` DECIMAL(65, 30) NOT NULL DEFAULT 0,
-    ADD COLUMN `seat` JSON NULL,
-    ADD COLUMN `seatPrice` DECIMAL(65, 30) NOT NULL DEFAULT 0;
